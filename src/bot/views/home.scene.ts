@@ -368,7 +368,7 @@ async function connectWallet(ctx: rlhubContext) {
         },
       }
     );
-    ctx.wizard.next()
+    ctx.wizard.selectStep(2)
   } catch (error) {
     console.log(error);
   }
