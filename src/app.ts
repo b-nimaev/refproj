@@ -19,7 +19,7 @@ dotenv.config()
 
 const app = express();
 
-export const secretPath = `/telegraf/burlang`;
+export const secretPath = `/telegraf/bot`;
 
 app.use(bodyParser.json());
 app.use((req, res, next) => {
@@ -30,7 +30,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.post(`/telegraf/burlang`, (req, res) => {
+app.post(`/telegraf/bot`, (req, res) => {
     bot.handleUpdate(req.body, res);
 });
 
@@ -64,13 +64,15 @@ async function set_webhook() {
     if (`${process.env.mode?.replace(/"/g, '')}` === "production") {
         console.log(`${process.env.mode?.replace(/"/g, '')}`)
         console.log(`prod secret path: ${secretPath}`)
-        await bot.telegram.setWebhook(`https://drvcash.com/telegraf/burlang`)
-            .then((status) => {
-                console.log(secretPath);
-                console.log(status);
-            }).catch(err => {
-                console.log(err)
-            })
+        await bot.telegram
+          .setWebhook(`https://www.bazamlm.ru/telegraf/bot`)
+          .then((status) => {
+            console.log(secretPath);
+            console.log(status);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
     } else {
         await fetchData().catch((error: any) => {
             console.error('Error setting webhook:', error);
