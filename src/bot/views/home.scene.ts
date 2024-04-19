@@ -264,6 +264,10 @@ async function menuHandler(ctx: rlhubContext) {
           await ctx.reply("Нужно отправить в текстовом виде");
         }
       } else if (ctx.updateType === "callback_query") {
+        ctx.answerCbQuery()
+        ctx.reply(
+          "Для активации площадки отправьте 2.87 TON на кошелек в течение 30 минут, <code>UQCbaw4zpUguHg71bZJfEWzqsnxNiHn226a9-ne-9sXSl4g7</code>"
+        );
       }
     } catch (err) {
       ctx.wizard.selectStep(0);
