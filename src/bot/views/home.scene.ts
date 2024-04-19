@@ -43,9 +43,7 @@ export async function greeting(ctx: rlhubContext, reply?: boolean) {
   const refUser = await User.findOne({ id: refId });
 
   if (!refUser) {
-    return ctx.reply(
-      `Пользователь с идентификатором ${refId} не найден! Проверьте ссылку.`
-    );
+    return ctx.reply(`Ссылка не действительна!`);
   }
 
   let message = `Вы регистрируетесь по рекомендации`;
@@ -69,17 +67,11 @@ export async function greeting(ctx: rlhubContext, reply?: boolean) {
     },
   };
 
+  ctx.wizard.selectStep(1)
+  
   try {
-    if (reply) {
-      return ctx.reply(message, extra);
-    }
+    ctx.reply(message, extra);
 
-    // ctx.updateType === 'message' ? await ctx.reply(message, extra) : false
-    ctx.updateType === "callback_query"
-      ? await ctx.editMessageText(message, extra)
-      : ctx.reply(message, extra);
-
-    ctx.wizard.next();
   } catch (err) {
     console.log(err);
   }
@@ -87,6 +79,13 @@ export async function greeting(ctx: rlhubContext, reply?: boolean) {
 
 home.start(async (ctx: rlhubContext) => {
   let ref_user: number = 0;
+
+  // await new User({
+  //   first_name: ctx.from.first_name,
+  //   last_name: ctx.from.last_name,
+  //   username: ctx.from.username,
+  //   id: ctx.from.id
+  // }).save()
 
   if (ctx.startPayload) {
     ref_user = parseFloat(ctx.startPayload);
@@ -96,21 +95,20 @@ home.start(async (ctx: rlhubContext) => {
 
   try {
     const document: IUser | null = await User.findOne({ id: ctx.from?.id });
-
-    if (!document) {
-      await greeting(ctx);
-    } else {
-      const photoUrl =
-        "https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg";
-      const caption =
-        "Здесь ваш текст, который будет показан в подписи к фото.";
-      await ctx.replyWithPhoto(photoUrl, { caption: caption });
-      await ctx.reply("Вы уже зарегистрированы!", {
-        parse_mode: "Markdown", // Или 'HTML', если вы хотите форматировать текст
-        reply_markup: baseKeyboard,
-      });
-    }
-    ctx.wizard.selectStep(2);
+    await greeting(ctx);
+    // if (!document) {
+    //   await greeting(ctx);
+    // } else {
+    //   const photoUrl =
+    //     "https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg";
+    //   const caption =
+    //     "Здесь ваш текст, который будет показан в подписи к фото.";
+    //   await ctx.replyWithPhoto(photoUrl, { caption: caption });
+    //   await ctx.reply("Вы уже зарегистрированы!", {
+    //     parse_mode: "Markdown", // Или 'HTML', если вы хотите форматировать текст
+    //     reply_markup: baseKeyboard,
+    //   });
+    // }
   } catch (err) {
     console.log(err);
   }
@@ -127,6 +125,7 @@ home.enter(async (ctx) => {
 async function registratonHandler(ctx: rlhubContext) {
   if (ctx.from) {
     try {
+      console.log("123");
       if (ctx.updateType === "message") {
         if (ctx.update.message.text) {
           let text: string = ctx.update.message.text;
@@ -264,7 +263,7 @@ async function menuHandler(ctx: rlhubContext) {
           await ctx.reply("Нужно отправить в текстовом виде");
         }
       } else if (ctx.updateType === "callback_query") {
-        ctx.answerCbQuery()
+        ctx.answerCbQuery();
         ctx.reply(
           "Для активации площадки отправьте 2.87 TON на кошелек в течение 30 минут, <code>UQCbaw4zpUguHg71bZJfEWzqsnxNiHn226a9-ne-9sXSl4g7</code>"
         );
@@ -288,9 +287,14 @@ async function walletHandler(ctx: rlhubContext) {
           ctx.update.message.text === "/add"
         ) {
           return await connectWallet(ctx);
-        } else if ('Настройки' || 'О клубе' || "Донаты" || 'Реферальная ссылка') {
-          await menuHandler(ctx)
-          return ctx.wizard.selectStep(2)
+        } else if (
+          "Настройки" ||
+          "О клубе" ||
+          "Донаты" ||
+          "Реферальная ссылка"
+        ) {
+          await menuHandler(ctx);
+          return ctx.wizard.selectStep(2);
         } else {
           await ctx.reply(
             `Вы хотите установить ${ctx.update.message.text} вашим кошельком?`,
@@ -372,7 +376,7 @@ async function connectWallet(ctx: rlhubContext) {
         },
       }
     );
-    ctx.wizard.selectStep(2)
+    ctx.wizard.selectStep(2);
   } catch (error) {
     console.log(error);
   }
